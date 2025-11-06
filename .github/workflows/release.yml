@@ -33,8 +33,8 @@ jobs:
 
       - name: Update update.json with version
         run: |
-          sed -i "s/\"version\": \".*\"/\"version\": \"${{ steps.vars.outputs.VERSION }}\"/" wp-notification-settings/update.json
-          sed -i "s/wp-notification-settings-.*.zip/wp-notification-settings-${{ steps.vars.outputs.VERSION }}.zip/" wp-notification-settings/update.json
+          sed -i "s/\"version\": \".*\"/\"version\": \"${{ steps.vars.outputs.VERSION }}\"/" update.json
+          sed -i "s/wp-notification-settings-.*.zip/wp-notification-settings-${{ steps.vars.outputs.VERSION }}.zip/" update.json
 
       - name: Upload update.json to Server
         uses: appleboy/scp-action@v0.1.4
@@ -42,5 +42,5 @@ jobs:
           host: ${{ secrets.SFTP_HOST }}
           username: ${{ secrets.SFTP_USER }}
           key: ${{ secrets.SFTP_KEY }}
-          source: "wp-notification-settings/update.json"
+          source: "update.json"
           target: "/www/htdocs/w019142c/02_live/cdn.zzzooo.studio/wp-plugins/wp-notification-settings/"
