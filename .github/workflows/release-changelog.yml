@@ -25,9 +25,8 @@ jobs:
       - name: Install git-cliff
         run: |
           LATEST=$(curl -s https://api.github.com/repos/orhun/git-cliff/releases/latest | jq -r '.tag_name')
-
           ASSET_URL=$(curl -s https://api.github.com/repos/orhun/git-cliff/releases/latest \
-            | jq -r '.assets[] | select(.name | test("x86_64.*(gnu|musl).*\\.tar\\.gz$")) | .browser_download_url')
+            | jq -r '.assets[] | select(.name | test("x86_64-unknown-linux-gnu.*\\.tar\\.gz$")) | .browser_download_url')
 
           echo "Downloading: $ASSET_URL"
 
@@ -36,6 +35,7 @@ jobs:
           tar -xzf cliff.tar.gz -C cliff --strip-components=1
 
           sudo mv cliff/git-cliff /usr/local/bin/git-cliff
+          git-cliff --version
 
       - name: Generate Changelog
         id: changelog
