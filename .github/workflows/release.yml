@@ -17,6 +17,10 @@ jobs:
         id: vars
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
+      - name: Update plugin version in main file
+        run: |
+          sed -i "s/Version: .*/Version: ${{ steps.vars.outputs.VERSION }}/" wp-notification-settings/wp-notification-settings.php
+
       - name: Create plugin ZIP
         run: |
           mkdir build
@@ -30,6 +34,7 @@ jobs:
           key: ${{ secrets.SFTP_KEY }}
           source: "build/wp-notification-settings-${{ steps.vars.outputs.VERSION }}.zip"
           target: "/www/htdocs/w019142c/02_live/cdn.zzzooo.studio/wp-plugins/wp-notification-settings/"
+          strip_components: true
 
       - name: Update update.json with version
         run: |
