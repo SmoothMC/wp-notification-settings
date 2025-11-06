@@ -27,14 +27,16 @@ jobs:
           zip -r build/wp-notification-settings-${{ steps.vars.outputs.VERSION }}.zip wp-notification-settings/ -x "*.git*" -x "*.github*"
 
       - name: Upload ZIP to Server via SFTP
-        uses: appleboy/sftp-action@v0.1.5
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SFTP_HOST }}
           username: ${{ secrets.SFTP_USER }}
           key: ${{ secrets.SFTP_KEY }}
           source: "build/wp-notification-settings-${{ steps.vars.outputs.VERSION }}.zip"
           target: "/www/htdocs/w019142c/02_live/cdn.zzzooo.studio/wp-plugins/wp-notification-settings/"
+          strip_components: 1
           overwrite: true
+          tar: false
 
       - name: Update update.json with version
         run: |
