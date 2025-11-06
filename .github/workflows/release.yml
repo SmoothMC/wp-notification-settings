@@ -1,0 +1,46 @@
+name: Build & Deploy WP Notification Settings
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Get Tag Version
+        id: vars
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Create plugin ZIP
+        run: |
+          mkdir build
+          zip -r build/wp-notification-settings-${{ steps.vars.outputs.VERSION }}.zip wp-notification-settings/ -x "*.git*" -x "*.github*"
+
+      - name: Upload ZIP to Server via SFTP
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          key: ${{ secrets.SFTP_KEY }}
+          source: "build/wp-notification-settings-${{ steps.vars.outputs.VERSION }}.zip"
+          target: "/www/htdocs/w019142c/02_live/cdn.zzzooo.studio/wp-plugins/wp-notification-settings/"
+
+      - name: Update update.json with version
+        run: |
+          sed -i "s/\"version\": \".*\"/\"version\": \"${{ steps.vars.outputs.VERSION }}\"/" wp-notification-settings/update.json
+          sed -i "s/wp-notification-settings-.*.zip/wp-notification-settings-${{ steps.vars.outputs.VERSION }}.zip/" wp-notification-settings/update.json
+
+      - name: Upload update.json to Server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          key: ${{ secrets.SFTP_KEY }}
+          source: "wp-notification-settings/update.json"
+          target: "/www/htdocs/w019142c/02_live/cdn.zzzooo.studio/wp-plugins/wp-notification-settings/"
