@@ -1,11 +1,12 @@
 {
-	"name": "WP Notification Settings",
-	"slug": "wp-notification-settings",
-	"version": "1.5.5",
-	"download_url": "https://cdn.zzzooo.studio/wp-plugins/wp-notification-settings/wp-notification-settings-1.5.5.zip",
-	"url": "https://cdn.zzzooo.studio/wp-plugins/wp-notification-settings/",
-	"requires": "5.2",
-	"tested": "6.8.3",
-	"last_updated": "2024-11-19",
-	"icon_url": "https://cdn.zzzooo.studio/wp-plugins/wp-notification-settings/icon.svg"
+  "name": "WP Notification Settings",
+  "slug": "wp-notification-settings",
+  "version": "1.5.7",
+  "download_url": "https://cdn.zzzooo.studio/wp-plugins/wp-notification-settings/wp-notification-settings-1.5.7.zip",
+  "url": "https://cdn.zzzooo.studio/wp-plugins/wp-notification-settings/",
+  "requires": "5.2",
+  "tested": "6.8.3",
+  "last_updated": "2025-11-21",
+  "icon_url": "https://cdn.zzzooo.studio/wp-plugins/wp-notification-settings/icon.svg",
+  "changelog": "- Fix: Better update handling\n- Add: Core email toggle\n- Improve: UI"
 }
