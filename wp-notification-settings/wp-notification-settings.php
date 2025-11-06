@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP Notification Settings
  * Description: Allows enabling and disabling various email notifications, such as automatic updates for plugins or themes, in single-site or multisite environments.
- * Version: 1.5.8
+ * Version: 1.5.8-test2
  * Requires at least: 3.7
  * Requires PHP: 5.6
  * Author: Mikka | zzzooo Studio
