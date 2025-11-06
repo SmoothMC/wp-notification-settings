@@ -252,7 +252,6 @@ function check_for_custom_plugin_update($transient) {
 }
 add_filter('site_transient_update_plugins', 'check_for_custom_plugin_update');
 
-
 // ---- UPDATE DETAILS POPUP (Plugin-Information) ----
 
 add_filter('plugins_api', function($result, $action, $args) {
@@ -283,12 +282,12 @@ add_filter('plugins_api', function($result, $action, $args) {
         'requires'     => $plugin_data['requires'],
         'tested'       => $plugin_data['tested'],
         'sections'     => [
-            'description' => 'Allows enabling and disabling WordPress update notification emails.'
+            'description' => 'Allows enabling and disabling WordPress update notification emails.',
+            'changelog'   => nl2br($plugin_data['changelog'] ?? 'No changelog available.')
         ],
     ];
 
 }, 10, 3);
-
 
 // ---- OPTIONAL: AUTOMATISCHE UPDATES ERLAUBEN ----
 // ohne diesen Block muss der Nutzer manuell updaten

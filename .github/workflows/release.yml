@@ -43,6 +43,11 @@ jobs:
           sed -i "s/\"version\": \".*\"/\"version\": \"${{ steps.vars.outputs.VERSION }}\"/" update.json
           sed -i "s/wp-notification-settings-.*.zip/wp-notification-settings-${{ steps.vars.outputs.VERSION }}.zip/" update.json
 
+      - name: Update last_updated field in update.json
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          sed -i "s/\"last_updated\": \".*\"/\"last_updated\": \"$DATE\"/" update.json
+
       - name: Upload update.json to Server
         uses: appleboy/scp-action@v0.1.4
         with:
