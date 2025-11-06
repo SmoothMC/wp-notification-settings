@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP Notification Settings
  * Description: Allows enabling and disabling various email notifications, such as automatic updates for plugins or themes, in single-site or multisite environments.
- * Version: 1.5.5
+ * Version: 1.5.7
  * Requires at least: 3.7
  * Requires PHP: 5.6
  * Author: Mikka | zzzooo Studio
@@ -211,9 +211,10 @@ function notification_settings_apply_filters() {
 }
 add_action( 'init', 'notification_settings_apply_filters' );
 
-// Update
+// ---- UPDATE CHECK ----
+
 function check_for_custom_plugin_update($transient) {
-    if (empty($transient->checked)) {
+    if ( empty($transient->checked) ) {
         return $transient;
     }
 
@@ -221,34 +222,80 @@ function check_for_custom_plugin_update($transient) {
     $response = wp_remote_get($request_url);
 
     if (is_wp_error($response)) {
-        error_log('Fehler bei der API-Anfrage: ' . $response->get_error_message());
         return $transient;
     }
 
-    $response_body = wp_remote_retrieve_body($response);
-    if (!$response_body) {
-        error_log('Antwort-Body leer: ' . print_r($response, true));
+    $plugin_data = json_decode(wp_remote_retrieve_body($response), true);
+    if (! $plugin_data) {
         return $transient;
     }
 
-    $plugin_data = json_decode($response_body, true);
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        error_log('Fehler beim Parsen der JSON-Antwort: ' . json_last_error_msg());
-        return $transient;
-    }
+    $plugin_file = 'wp-notification-settings/wp-notification-settings.php';
 
-    // Hier fügen wir die Debugging-Zeile hinzu
-    error_log('Transiente Daten vor Update: ' . print_r($transient, true));
-
-    // Update-Informationen setzen
-    if (isset($plugin_data['version']) && version_compare($plugin_data['version'], $transient->checked['wp-notification-settings/wp-notification-settings.php'], '>')) {
-        $transient->response['wp-notification-settings/wp-notification-settings.php'] = array(
+    if (
+        isset($plugin_data['version']) &&
+        version_compare($plugin_data['version'], $transient->checked[$plugin_file], '>')
+    ) {
+        $transient->response[$plugin_file] = (object) [
+            'slug'        => 'wp-notification-settings',
+            'plugin'      => $plugin_file,
             'new_version' => $plugin_data['version'],
-            'url' => $plugin_data['url'],
-            'package' => $plugin_data['download_url']
-        );
+            'url'         => $plugin_data['url'],
+            'package'     => $plugin_data['download_url'],
+            'tested'      => $plugin_data['tested'] ?? '',
+            'requires'    => $plugin_data['requires'] ?? '',
+            'requires_php'=> '5.6',
+        ];
     }
 
     return $transient;
 }
 add_filter('site_transient_update_plugins', 'check_for_custom_plugin_update');
+
+
+// ---- UPDATE DETAILS POPUP (Plugin-Information) ----
+
+add_filter('plugins_api', function($result, $action, $args) {
+
+    if ($action !== 'plugin_information' || $args->slug !== 'wp-notification-settings') {
+        return $result;
+    }
+
+    $request_url = 'https://cdn.zzzooo.studio/wp-plugins/wp-notification-settings/update.json';
+    $response = wp_remote_get($request_url);
+
+    if (is_wp_error($response)) {
+        return $result;
+    }
+
+    $plugin_data = json_decode(wp_remote_retrieve_body($response), true);
+    if (! $plugin_data) {
+        return $result;
+    }
+
+    return (object) [
+        'name'         => $plugin_data['name'],
+        'slug'         => $plugin_data['slug'],
+        'version'      => $plugin_data['version'],
+        'author'       => '<a href="https://zzzooo.studio/">Mikka | zzzooo Studio</a>',
+        'homepage'     => $plugin_data['url'],
+        'download_link'=> $plugin_data['download_url'],
+        'requires'     => $plugin_data['requires'],
+        'tested'       => $plugin_data['tested'],
+        'sections'     => [
+            'description' => 'Allows enabling and disabling WordPress update notification emails.'
+        ],
+    ];
+
+}, 10, 3);
+
+
+// ---- OPTIONAL: AUTOMATISCHE UPDATES ERLAUBEN ----
+// ohne diesen Block muss der Nutzer manuell updaten
+
+add_filter( 'auto_update_plugin', function( $update, $item ) {
+    if ( isset($item->slug) && $item->slug === 'wp-notification-settings' ) {
+        return true;
+    }
+    return $update;
+}, 10, 2);
