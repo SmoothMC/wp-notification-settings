@@ -19,22 +19,32 @@ jobs:
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Install git-cliff
+        run: |
+          wget https://github.com/orhun/git-cliff/releases/latest/download/git-cliff-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m).tar.gz -O cliff.tar.gz
+          tar -xzf cliff.tar.gz
+          mv git-cliff*/git-cliff /usr/local/bin/git-cliff
+
       - name: Generate Changelog
         id: changelog
-        uses: orhun/git-cliff-action@v2
-        with:
-          config: |
-            [changelog]
-            header = "## Changelog for version {{ version }}"
-            body = "{{ commits }}"
-            footer = ""
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git cliff --tag "${{ steps.version.outputs.VERSION }}" > CHANGELOG.tmp
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          cat CHANGELOG.tmp >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Inject changelog into update.json
         run: |
           CHANGELOG=$(echo "${{ steps.changelog.outputs.changelog }}" | sed 's/"/\\"/g')
           jq --arg CHANGELOG "$CHANGELOG" '.changelog = $CHANGELOG' update.json > update.tmp && mv update.tmp update.json
+
+      - name: Update last_updated field in update.json
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          sed -i "s/\"last_updated\": \".*\"/\"last_updated\": \"$DATE\"/" update.json
 
       - name: Update Stable Tag in readme.txt
         run: |
